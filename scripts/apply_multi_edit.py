@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-from collections import namedtuple, defaultdict
+import argparse
 import re
+import subprocess
 import sys
+import io
+
+from collections import namedtuple, defaultdict
 
 from digest import digest
 
@@ -25,6 +29,16 @@ HUNK_HEADER_RE = re.compile(
 InputHunk = namedtuple("InputHunk", "path first_line line_count hash contents")
 File = namedtuple("File", "path hash ordered_hunks")
 Hunk = namedtuple("Hunk", "first_line line_count contents")
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--dry-run", action="store_true",
+    )
+
+    return parser.parse_args()
 
 
 def read_input_hunks(lines):
@@ -104,12 +118,23 @@ def apply_file_hunks(file):
         file_lines[start_index : start_index + hunk.line_count] = hunk.contents
         offset += len(hunk.contents) - hunk.line_count
 
+    return "".join(file_lines)
+
+
+def show_diff(file, new_contents):
+    subprocess.run(
+        ["diff", "-U3", file.path, "-"], input=new_contents.encode("utf8"),
+    )
+
+
+def write_back(file, new_contents):
     with open(file.path, "w", encoding="utf8") as opened_file:
-        for line in file_lines:
-            opened_file.write(line)
+        opened_file.write(new_contents)
 
 
 def main():
+    args = parse_args()
+
     try:
         input_hunks = read_input_hunks(sys.stdin)
         files = group_input_hunks_by_file(input_hunks)
@@ -120,15 +145,24 @@ def main():
     successful_files = 0
     for file in files:
         try:
-            apply_file_hunks(file)
+            new_contents = apply_file_hunks(file)
             successful_files += 1
-            print(f"{file.path}: OK")
+
+            if args.dry_run:
+                show_diff(file, new_contents)
+            else:
+                write_back(file, new_contents)
+                print(f"{file.path}: OK")
+
         except BadHash:
             print(f"{file.path}: bad checksum")
-        except Exception as error:
+
+        except IOError as error:
             print(f"{file.path}: {error}")
 
-    print(f"{successful_files} out of {len(files)} applied successfully")
+    action = "can be applied" if args.dry_run else "applied"
+    print(f"Changes on {successful_files} out of {len(files)} files {action}")
+
     if successful_files < len(files):
         sys.exit(1)
 

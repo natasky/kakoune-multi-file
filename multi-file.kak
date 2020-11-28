@@ -37,7 +37,7 @@ def -params .. \
                 hook -always -once buffer BufCloseFifo .* %{
                     nop %sh{ rm -r '$work_dir' }
                     exec -draft gjd
-                    close-empty-multi-file '$kak_client'
+                    multi-file-close-empty '$kak_client'
                 }
             }
         "
@@ -48,6 +48,8 @@ def -override \
     -docstring 'Apply and close multi-file' \
     multi-file-apply \
 %{
+    multi-file-ensure-buffer-exists
+
     eval %sh{
         scripts=$(dirname "$kak_source")/scripts
 
@@ -65,16 +67,15 @@ def -override \
 
             if [ $? = 0 ]; then
                 printf %s "
-                    echo -debug success
                     try %{ db *multi-file* }
                     try %{ db *multi-file-output* }
+                    try %{ db *multi-file-review* }
                     eval -client '$kak_client' %{
                         echo -markup {Information}All changes applied
                     }
                 " | kak -p "$kak_session"
             else
                 printf %s "
-                    echo -debug fail
                     eval -client '$kak_client' %{
                         echo -markup {Error}Not all changes were applied
                     }
@@ -102,12 +103,69 @@ def -override \
     }
 }
 
+def -override \
+    -docstring 'Review changes in multi-file' \
+    multi-file-review \
+%{
+    multi-file-ensure-buffer-exists
+
+    eval %sh{
+        scripts=$(dirname "$kak_source")/scripts
+
+        # Setup fifos
+        work_dir=$(mktemp -d "${TMPDIR:-/tmp}"/kak.XXXXXXXX)
+        mkdir -p "$work_dir"
+        mkfifo "$work_dir/input"
+        mkfifo "$work_dir/output"
+
+        # Spawn script, close buffers on success
+        (
+            "$scripts/apply_multi_edit.py" --dry-run \
+                <"$work_dir/input" \
+                >"$work_dir/output" 2>&1
+
+            if [ $? = 0 ]; then
+                printf %s "
+                    eval -client '$kak_client' %{
+                        echo -markup {Information}All changes can be applied
+                    }
+                " | kak -p "$kak_session"
+            else
+                printf %s "
+                    eval -client '$kak_client' %{
+                        echo -markup {Error}Not all changes can be applied
+                    }
+                " | kak -p "$kak_session"
+            fi
+        ) >/dev/null 2>&1 </dev/null &
+
+        # Feed input
+        printf %s "
+            eval -buffer *multi-file* -draft %{
+                exec <%>
+                echo -quoting raw -to-file '$work_dir/input' '' %val{selection}
+            }
+        "
+
+        # Read output to client and cleaup when done
+        printf %s "
+            eval -try-client '$kak_opt_toolsclient' %{
+                edit! -fifo '$work_dir/output' *multi-file-review*
+                set buffer filetype diff
+                hook -always -once buffer BufCloseFifo .* %{
+                    nop %sh{ rm -r '$work_dir' }
+                }
+            }
+        "
+    }
+}
+
 # Utility commands
 
 def -hidden \
     -override \
     -params 1 \
-    close-empty-multi-file \
+    multi-file-close-empty \
 %{
     try %{
         exec -draft <%> s (?S). <ret>
@@ -116,6 +174,17 @@ def -hidden \
         eval -client %arg{1} %{
             echo -markup {Error}No grep lines detected
         }
+    }
+}
+
+def -hidden \
+    -override \
+    multi-file-ensure-buffer-exists \
+%{
+    try %{
+        eval -buffer *multi-file* ''
+    } catch %{
+        fail 'No *multi-file* buffer'
     }
 }
 
