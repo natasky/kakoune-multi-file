@@ -104,7 +104,7 @@ def apply_file_hunks(file):
         file_lines[start_index : start_index + hunk.line_count] = hunk.contents
         offset += len(hunk.contents) - hunk.line_count
 
-    with open(file.path + "out", "w", encoding="utf8") as opened_file:
+    with open(file.path, "w", encoding="utf8") as opened_file:
         for line in file_lines:
             opened_file.write(line)
 

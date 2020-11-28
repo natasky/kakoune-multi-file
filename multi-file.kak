@@ -48,7 +48,7 @@ def -override \
     -docstring 'Apply and close multi-file' \
     multi-file-apply \
 %{
-    eval -buffer *multi-file* %sh{
+    eval %sh{
         scripts=$(dirname "$kak_source")/scripts
 
         # Setup fifos
@@ -61,24 +61,30 @@ def -override \
         (
             "$scripts/apply_multi_edit.py" \
                 <"$work_dir/input" \
-                >"$work_dir/output" 2>&1 && \
-            printf %s "
-                try %{ db *multi-file* }
-                try %{ db *multi-file-output* }
-                eval -client '$kak_client' %{
-                    echo -markup {Information}All changes applied
-                }
-            " | kak -p '$kak_session' || \
-            printf %s "
-                eval -client '$kak_client' %{
-                    echo -markup {Error}Not all changes were applied
-                }
-            " | kak -p '$kak_session'
+                >"$work_dir/output" 2>&1
+
+            if [ $? = 0 ]; then
+                printf %s "
+                    echo -debug success
+                    try %{ db *multi-file* }
+                    try %{ db *multi-file-output* }
+                    eval -client '$kak_client' %{
+                        echo -markup {Information}All changes applied
+                    }
+                " | kak -p "$kak_session"
+            else
+                printf %s "
+                    echo -debug fail
+                    eval -client '$kak_client' %{
+                        echo -markup {Error}Not all changes were applied
+                    }
+                " | kak -p "$kak_session"
+            fi
         ) >/dev/null 2>&1 </dev/null &
 
         # Feed input
         printf %s "
-            eval -draft %{
+            eval -buffer *multi-file* -draft %{
                 exec <%>
                 echo -quoting raw -to-file '$work_dir/input' '' %val{selection}
             }
