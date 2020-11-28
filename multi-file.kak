@@ -1,3 +1,5 @@
+decl -hidden str multi_file_home %sh{ dirname "$kak_source" }
+
 # Commands
 
 def -params .. \
@@ -6,8 +8,6 @@ def -params .. \
     multi-file-from-grep \
 %{
     eval %sh{
-        scripts=$(dirname "$kak_source")/scripts
-
         # Setup fifos
         work_dir=$(mktemp -d "${TMPDIR:-/tmp}"/kak.XXXXXXXX)
         mkdir -p "$work_dir"
@@ -16,7 +16,7 @@ def -params .. \
 
         # Spawn script
         (
-            "$scripts/multi_file_from_grep.py" $@ \
+            "$kak_opt_multi_file_home/scripts/multi_file_from_grep.py" $@ \
                 <"$work_dir/input" \
                 >"$work_dir/output"
         ) >/dev/null 2>&1 </dev/null &
@@ -61,7 +61,7 @@ def -override \
 
         # Spawn script, close buffers on success
         (
-            "$scripts/apply_multi_edit.py" \
+            "$kak_opt_multi_file_home/scripts/apply_multi_edit.py" \
                 <"$work_dir/input" \
                 >"$work_dir/output" 2>&1
 
@@ -120,7 +120,7 @@ def -override \
 
         # Spawn script, close buffers on success
         (
-            "$scripts/apply_multi_edit.py" --dry-run \
+            "$kak_opt_multi_file_home/scripts/apply_multi_edit.py" --dry-run \
                 <"$work_dir/input" \
                 >"$work_dir/output" 2>&1
 
