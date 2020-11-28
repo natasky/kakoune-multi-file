@@ -9,7 +9,7 @@ from traceback import print_exc
 
 from digest import digest
 
-GREP_LINE_PATTERN = re.compile(r"^([^:]+):(\d+):", re.VERBOSE)
+GREP_LINE_PATTERN = re.compile(r"^[^\w/]*([^:]+):(\d+):", re.VERBOSE)
 
 
 def parse_args():
