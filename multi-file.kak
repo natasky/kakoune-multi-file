@@ -225,38 +225,38 @@ def -hidden \
 }
 
 multi-file-hl-lang objc \.(c|cc|cl|cpp|h|hh|hpp|m|mm)
-# multi-file-hl-lang cabal \.cabal
-# multi-file-hl-lang clojure \.(clj|cljc|cljs|cljx|edn)
-# multi-file-hl-lang coffee \.coffee
-# multi-file-hl-lang css .*\.css
-# multi-file-hl-lang d .*\.d
-# multi-file-hl-lang dockerfile dockerfile
+multi-file-hl-lang cabal \.cabal
+multi-file-hl-lang clojure \.(clj|cljc|cljs|cljx|edn)
+multi-file-hl-lang coffee \.coffee
+multi-file-hl-lang css .*\.css
+multi-file-hl-lang d .*\.d
+multi-file-hl-lang dockerfile dockerfile
 multi-file-hl-lang fish \.fish
-# multi-file-hl-lang go \.go
-# multi-file-hl-lang haskell \.hs
-# multi-file-hl-lang html \.html?
-# multi-file-hl-lang ini \.ini
+multi-file-hl-lang go \.go
+multi-file-hl-lang haskell \.hs
+multi-file-hl-lang html \.html?
+multi-file-hl-lang ini \.ini
 multi-file-hl-lang java \.java
 multi-file-hl-lang typescript \.m?[jt]sx?
 multi-file-hl-lang json \.json
-# multi-file-hl-lang julia \.jl
+multi-file-hl-lang julia \.jl
 multi-file-hl-lang kakrc (\.kak|kakrc)
-# multi-file-hl-lang latex \.(tex|cls|sty|dtx)
-# multi-file-hl-lang lua \.lua
-# multi-file-hl-lang makefile (makefile|\.mk|\.make)
-# multi-file-hl-lang markdown \.(markdown|md|mkd)
-# multi-file-hl-lang perl \.(t|p[lm])
+multi-file-hl-lang latex \.(tex|cls|sty|dtx)
+multi-file-hl-lang lua \.lua
+multi-file-hl-lang makefile (makefile|\.mk|\.make)
+multi-file-hl-lang markdown \.(markdown|md|mkd)
+multi-file-hl-lang perl \.(t|p[lm])
 multi-file-hl-lang python \.py
-# multi-file-hl-lang ruby \.rb
+multi-file-hl-lang ruby \.rb
 multi-file-hl-lang rust \.rs
-# multi-file-hl-lang sass \.sass
-# multi-file-hl-lang scala \.scala
-# multi-file-hl-lang scss \.scss
+multi-file-hl-lang sass \.sass
+multi-file-hl-lang scala \.scala
+multi-file-hl-lang scss \.scss
 multi-file-hl-lang sh \.(z|ba|c|k|mk)?sh(rc|_profile)?
-# multi-file-hl-lang swift \.swift
+multi-file-hl-lang swift \.swift
 multi-file-hl-lang toml \.toml
 multi-file-hl-lang yaml \.ya?ml
-# multi-file-hl-lang sql \.sql
+multi-file-hl-lang sql \.sql
 
 hook -group multi-file-highlight global WinSetOption filetype=multi-file %{
     addhl window/multi-file ref multi-file
