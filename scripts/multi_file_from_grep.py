@@ -9,7 +9,7 @@ from traceback import print_exc
 
 from digest import digest
 
-GREP_LINE_PATTERN = re.compile(r"^([^:]+):(\d+):", re.VERBOSE)
+GREP_LINE_PATTERN = re.compile(r"^([^:]+):(\d+)", re.VERBOSE)
 
 
 def parse_args():
@@ -43,8 +43,7 @@ def lines_by_path_from_grep_matches(grep_matches, before, after):
             lines_by_path[file_path].add(line_number)
 
     return [
-        (file_path, sorted(lines))
-        for file_path, lines in sorted(lines_by_path.items())
+        (file_path, sorted(lines)) for file_path, lines in sorted(lines_by_path.items())
     ]
 
 
@@ -73,9 +72,7 @@ def main():
     after = args.after or args.context
 
     grep_matches = grep_matches_from_input(sys.stdin)
-    lines_by_path = lines_by_path_from_grep_matches(
-        grep_matches, before, after
-    )
+    lines_by_path = lines_by_path_from_grep_matches(grep_matches, before, after)
 
     for file_path, line_number in lines_by_path:
         try:

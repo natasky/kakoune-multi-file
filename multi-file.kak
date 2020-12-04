@@ -1,11 +1,33 @@
 decl -hidden str multi_file_home %sh{ dirname "$kak_source" }
 
+decl -docstring %{
+    Pattern to use when running multi-file-from-grep.
+    Pattern must have file name in group 1 and line number in group 2.
+} str multi_file_grep_pattern "^[\h>:-]*([^:]+):(\d+)"
+
 # Commands
 
 def -params .. \
     -override \
-    -docstring 'Create multi-file file from grep results' \
+    -docstring 'Create multi-file buffer from grep results in current buffer' \
     multi-file-from-grep \
+%{
+    exec -draft %{
+        try %{
+            exec <%> s "%opt{multi_file_grep_pattern}" <ret>
+            multi-file-from-selections
+        } catch %{
+            fail "No grep lines detected"
+        }
+    }
+}
+
+def -override \
+    -docstring %{
+        Create multi-file from selections. Group 1 must be file name and group
+        2 must be line number.
+    } \
+    multi-file-from-selections \
 %{
     eval %sh{
         # Setup fifos
@@ -23,9 +45,10 @@ def -params .. \
 
         # Feed input
         printf %s "
-            eval -draft %{
-                exec <%>
-                echo -quoting raw -to-file '$work_dir/input' '' %val{selection}
+            eval -itersel %{
+                echo -quoting raw -to-file '$work_dir/input' '' \\
+                    \"%reg{1}:%reg{2}
+\"
             }
         "
 
@@ -172,7 +195,7 @@ def -hidden \
     } catch %{
         db
         eval -client %arg{1} %{
-            echo -markup {Error}No grep lines detected
+            echo -markup {Error}No lines collected
         }
     }
 }
