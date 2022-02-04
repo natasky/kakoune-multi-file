@@ -14,28 +14,40 @@ class BadHash(Exception):
     pass
 
 
+class HeaderModified(Exception):
+    def __init__(self, input_line):
+        self.input_line = input_line
+
+
 HUNK_HEADER_RE = re.compile(
     r"""
     ^ @@@ \s
     (?P<path> .+ ) \s
     (?P<first_line> \d+ ) , (?P<line_count> \d+ ) \s
     (?P<hash> \S+ ) \s
+    (?P<header_hash> \S+ ) \s
     @@@ $
     """,
     re.VERBOSE,
 )
 
 
-InputHunk = namedtuple("InputHunk", "path first_line line_count hash contents")
+InputHunk = namedtuple(
+    "InputHunk",
+    "input_line path first_line line_count hash header_hash contents",
+)
 File = namedtuple("File", "path hash ordered_hunks")
-Hunk = namedtuple("Hunk", "first_line line_count contents")
+Hunk = namedtuple(
+    "Hunk", "input_line first_line line_count header_hash contents"
+)
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--dry-run", action="store_true",
+        "--dry-run",
+        action="store_true",
     )
 
     return parser.parse_args()
@@ -44,19 +56,21 @@ def parse_args():
 def read_input_hunks(lines):
     hunks = []
 
-    for line in lines:
+    for i, line in enumerate(lines):
         hunk_header_match = HUNK_HEADER_RE.match(line)
 
         if hunk_header_match is not None:
-            hunks.append(
-                InputHunk(
-                    path=hunk_header_match.group("path"),
-                    first_line=int(hunk_header_match.group("first_line")),
-                    line_count=int(hunk_header_match.group("line_count")),
-                    hash=hunk_header_match.group("hash"),
-                    contents=[],
-                )
+            hunk = InputHunk(
+                input_line=i + 1,
+                path=hunk_header_match.group("path"),
+                first_line=int(hunk_header_match.group("first_line")),
+                line_count=int(hunk_header_match.group("line_count")),
+                hash=hunk_header_match.group("hash"),
+                header_hash=hunk_header_match.group("header_hash"),
+                contents=[],
             )
+
+            hunks.append(hunk)
 
         else:
             if len(hunks) == 0:
@@ -75,17 +89,17 @@ def group_input_hunks_by_file(input_hunks):
 
     for path, input_hunks in hunks_by_file.items():
         if any(
-            input_hunk.hash != input_hunks[0].hash
-            for input_hunk in input_hunks
+            input_hunk.hash != input_hunks[0].hash for input_hunk in input_hunks
         ):
-
             raise Exception(f"Bad input: different hashes for {path}")
 
         ordered_hunks = sorted(
             (
                 Hunk(
+                    input_line=input_hunk.input_line,
                     first_line=input_hunk.first_line,
                     line_count=input_hunk.line_count,
+                    header_hash=input_hunk.header_hash,
                     contents=input_hunk.contents,
                 )
                 for input_hunk in input_hunks
@@ -105,6 +119,21 @@ def group_input_hunks_by_file(input_hunks):
 
 
 def apply_file_hunks(file):
+    for hunk in file.ordered_hunks:
+        computed_header_hash = digest(
+            [
+                str(i)
+                for i in [
+                    file.path,
+                    hunk.first_line,
+                    hunk.line_count,
+                    file.hash,
+                ]
+            ]
+        )
+        if computed_header_hash != hunk.header_hash:
+            raise HeaderModified(hunk.input_line)
+
     with open(file.path, encoding="utf8") as opened_file:
         file_lines = list(opened_file)
 
@@ -123,7 +152,8 @@ def apply_file_hunks(file):
 
 def show_diff(file, new_contents):
     subprocess.run(
-        ["diff", "-U3", file.path, "-"], input=new_contents.encode("utf8"),
+        ["diff", "-U3", file.path, "-"],
+        input=new_contents.encode("utf8"),
     )
 
 
@@ -154,8 +184,11 @@ def main():
                 write_back(file, new_contents)
                 print(f"{file.path}: OK")
 
+        except HeaderModified as e:
+            print(f"{file.path}: header modified (line {e.input_line})")
+
         except BadHash:
-            print(f"{file.path}: bad checksum")
+            print(f"{file.path}: modified on disk")
 
         except IOError as error:
             print(f"{file.path}: {error}")

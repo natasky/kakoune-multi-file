@@ -84,7 +84,8 @@ def consecutive_ranges(numbers):
 
 def print_hunk_header(file_path, first_line, last_line, hash):
     lines = last_line - first_line + 1
-    print(f"@@@ {file_path} {first_line},{lines} {hash} @@@")
+    header_hash = digest([str(i) for i in [file_path, first_line, lines, hash]])
+    print(f"@@@ {file_path} {first_line},{lines} {hash} {header_hash} @@@")
 
 
 def main():
