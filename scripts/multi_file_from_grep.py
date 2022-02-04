@@ -14,9 +14,28 @@ GREP_LINE_PATTERN = re.compile(r"^[^\w/]*([^:]+):(\d+):", re.VERBOSE)
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-A", "--after", type=int, metavar="NUM")
-    parser.add_argument("-B", "--before", type=int, metavar="NUM")
-    parser.add_argument("-C", "--context", type=int, metavar="NUM", default=3)
+    parser.add_argument(
+        "-A",
+        "--after",
+        type=int,
+        metavar="NUM",
+        help="Collect NUM lines after match, overrides --context",
+    )
+    parser.add_argument(
+        "-B",
+        "--before",
+        type=int,
+        metavar="NUM",
+        help="Collect NUM lines before match, overrides --context",
+    )
+    parser.add_argument(
+        "-C",
+        "--context",
+        type=int,
+        metavar="NUM",
+        default=3,
+        help="Collect NUM lines before and after match",
+    )
     return parser.parse_args()
 
 
@@ -38,7 +57,8 @@ def lines_by_path_from_grep_matches(grep_matches, before, after):
 
     for file_path, base_line_number in grep_matches:
         for line_number in range(
-            max(base_line_number - before, 1), base_line_number + after + 1,
+            max(base_line_number - before, 1),
+            base_line_number + after + 1,
         ):
             lines_by_path[file_path].add(line_number)
 
@@ -73,9 +93,7 @@ def main():
     after = args.after or args.context
 
     grep_matches = grep_matches_from_input(sys.stdin)
-    lines_by_path = lines_by_path_from_grep_matches(
-        grep_matches, before, after
-    )
+    lines_by_path = lines_by_path_from_grep_matches(grep_matches, before, after)
 
     for file_path, line_number in lines_by_path:
         try:
