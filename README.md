@@ -60,6 +60,9 @@ changes. Deleting entire hunk (header and contents) is fine, and will leave
 original contents unchanged when applying. Any modification to header will
 prevent all changes to the file from applying.
 
+**Tip**: it's sometimes hard to keep code tidy when editing multiple files, if
+you use a code formatter you can neglect that and run it after applying changes.
+
 ### Optional: review changes
 
 After making changes, you may use `multi-file-review` to review them. This will
