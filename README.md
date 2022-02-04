@@ -49,16 +49,16 @@ line 2
 ...
 ```
 
-Each `@@@ ... @@@` line is a hunk title, followed by contents from files. Every
-line from `grep` should have a corresponding hunk along with sorrounding
-context. If hunks overlap, they are merged into one.
+Each `@@@ ... @@@` line is a hunk header, followed by contents from files. Every
+line from `grep` should have a corresponding hunk with sorrounding context.
+Overlapping hunks are merged.
 
 Make your changes to the contents of the hunks.
 
-**Note**: avoid modifying hunk titles, these are required for applying back the
-changes. Deleting entire hunk (title and contents) is fine, and will leave
-original contents unchanged when applying. Any modification to title will
-prevent hunk changes from applying.
+**Note**: don't modify hunk headers, these are required for applying the
+changes. Deleting entire hunk (header and contents) is fine, and will leave
+original contents unchanged when applying. Any modification to header will
+prevent all changes to the file from applying.
 
 ### Optional: review changes
 
