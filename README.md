@@ -1,6 +1,6 @@
 # kak-multi-file
 
-Kakoune plugin to make changes across multiple files in one buffer.
+Kakoune plugin to make changes across multiple files in a single buffer.
 
 TODO: demo clip
 
@@ -8,20 +8,85 @@ TODO: demo clip
 
 ### Collect lines to change
 
-Tip: ...use kakoune-find to make quick changes...
-Tip: ...remove uninteresting lines, add more lines with `!grep`...
-Tip: ...use compiler/linter output...
+Use `grep` command to find points of interest across multiple files.
 
-### Make changes in a single buffer
+You can edit `*grep*` buffer to add or remove lines of interest.
+
+**Tip**: if you just need make changes in those lines, use
+[kakoune-find](https://github.com/occivink/kakoune-find)'s
+`find-apply-changes -force` command.
+
+**Tip**: if your compiler or linter emits lines like `<path>:<line>:`, its
+output can also be used to collect lines to change.
+
+### Make changes in single buffer
+
+Use `multi-edit-from-grep` command to collect lines and their sorrounding
+context to a single editable buffer:
+
+```
+multi-file-from-grep [-A NUM] [-B NUM] [-C NUM]
+
+optional arguments:
+  -A NUM, --after NUM   Collect NUM lines after match, overrides --context.
+  -B NUM, --before NUM  Collect NUM lines before match, overrides --context.
+  -C NUM, --context NUM Collect NUM lines before and after match (default: 3).
+```
+
+For example, `multi-file-from-grep -A10` will collect 3 lines before every
+result and 10 lines after.
+
+This will open a `*multi-file*` buffer with contents like:
+
+```
+@@@ <path> <line>,<other details...> @@@
+line 1
+line 2
+...
+@@@ <path> <line>,<other details...> @@@
+line 1
+line 2
+...
+```
+
+Each `@@@ ... @@@` line is a hunk title, followed by contents from files. Every
+line from `grep` should have a corresponding hunk along with sorrounding
+context. If hunks overlap, they are merged into one.
+
+Make your changes to the contents of the hunks.
+
+**Note**: avoid modifying hunk titles, these are required for applying back the
+changes. Deleting entire hunk (title and contents) is fine, and will leave
+original contents unchanged when applying. Any modification to title will
+prevent hunk changes from applying.
 
 ### Optional: review changes
 
+After making changes, you may use `multi-file-review` to review them. This will
+open a new buffer with a unified diff of all changes without applying them. You
+can repeat this step after making more changes to update the review buffer.
+
+This step is optional, you can apply changes without reviewing them first.
+
 ### Apply changes
+
+Use `multi-file-apply` to apply all changes. If nothing goes wrong, this will
+close buffers opened in earlier steps. Otherwise you'll get a buffer with error
+messages and no buffers will be closed.
+
+**Note**: this step does _not_ use the review buffer if exists, it applies the
+changes currently made in the `*multi-file*` buffer. If any change was made
+since last review, it will also be applied.
 
 ## Caveats
 
-... this works directly on disk, no support for modifying open buffers
-... changing files while multi-file buffer exists will prevent it from applying
+Like `grep`, this plugin works with files on disk. It's not aware of any buffers
+currently opened in Kakoune. Make sure your changes in other buffers are saved
+before starting (before running `grep`).
+
+If a file was modified on disk after its contents were collected by
+`multi-file-from-grep`, then `multi-file-apply` will refuse to apply any change
+to it.
 
 ## Setup
 
@@ -37,6 +102,13 @@ plug "natasky/kak-multi-file"
 
 ## Comparison with kakoune-find
 
-## Contibuting
+`kakoune-find` is great for making changes directly in lines found by `grep`,
+e.g. for renaming something. Prefer using it in those cases, as it involves
+fewer steps.
+
+This plugin lets you edit multiple lines around each result, add or remove
+lines, and make changes to lines around the result found by `grep`.
+
+## Contributing
 
 Bug reports, ideas for features and PRs are welcome!
