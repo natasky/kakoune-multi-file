@@ -206,7 +206,7 @@ def -hidden \
     eval %sh{
         printf '
             addhl shared/multi-file/%s region \
-                "(?Si)^@@@ .*%s \d+,\d+ \S+ @@@$" \
+                "(?Si)^@@@ .*%s \d+,\d+ \S+ \S+ @@@$" \
                 "^(?=@@@ )" \
                 regions
         ' "$1" "$2"
