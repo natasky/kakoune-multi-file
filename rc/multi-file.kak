@@ -1,4 +1,4 @@
-decl -hidden str multi_file_home %sh{ dirname "$kak_source" }
+decl -hidden str multi_file_home %sh{ dirname "$kak_source/.." }
 
 # Commands
 
@@ -52,8 +52,6 @@ def -override \
     multi-file-ensure-buffer-exists
 
     eval %sh{
-        scripts=$(dirname "$kak_source")/scripts
-
         # Setup fifos
         work_dir=$(mktemp -d "${TMPDIR:-/tmp}"/kak.XXXXXXXX)
         mkdir -p "$work_dir"
@@ -111,8 +109,6 @@ def -override \
     multi-file-ensure-buffer-exists
 
     eval %sh{
-        scripts=$(dirname "$kak_source")/scripts
-
         # Setup fifos
         work_dir=$(mktemp -d "${TMPDIR:-/tmp}"/kak.XXXXXXXX)
         mkdir -p "$work_dir"
