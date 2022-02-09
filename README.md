@@ -2,7 +2,7 @@
 
 Kakoune plugin to make changes across multiple files in a single buffer.
 
-TODO: demo clip
+![demo](./demo.gif)
 
 ## Workflow
 
