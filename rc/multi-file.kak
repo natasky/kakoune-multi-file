@@ -1,4 +1,4 @@
-decl -hidden str multi_file_home %sh{ dirname "$kak_source/.." }
+decl -hidden str multi_file_home %sh{ dirname $(dirname "$kak_source") }
 
 # Commands
 
