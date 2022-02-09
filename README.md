@@ -81,7 +81,7 @@ messages and no buffers will be closed.
 changes currently made in the `*multi-file*` buffer. If any change was made
 since last review, it will also be applied.
 
-## Caveats
+## Notes
 
 Like `grep`, this plugin works with files on disk. It's not aware of any buffers
 currently opened in Kakoune. Make sure your changes in other buffers are saved
@@ -90,6 +90,9 @@ before starting (before running `grep`).
 If a file was modified on disk after its contents were collected by
 `multi-file-from-grep`, then `multi-file-apply` will refuse to apply any change
 to it.
+
+As with any action that modifies multiple files directly on disk, be sure to
+check in any existing changes to source control before starting.
 
 ## Setup
 
