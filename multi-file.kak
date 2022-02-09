@@ -7,6 +7,7 @@ def -params .. \
     -docstring 'Create multi-file file from grep results' \
     multi-file-from-grep \
 %{
+    require-module multi-file-colors
     eval %sh{
         # Setup fifos
         work_dir=$(mktemp -d "${TMPDIR:-/tmp}"/kak.XXXXXXXX)
@@ -190,77 +191,81 @@ def -hidden \
 
 # Colors
 
-try %{ rmhl shared/multi-file }
-try %{ rmhooks global multi-file-highlight }
+provide-module multi-file-colors %§
 
-addhl shared/multi-file regions
+    try %{ rmhl shared/multi-file }
+    try %{ rmhooks global multi-file-highlight }
 
-addhl shared/multi-file/default default-region \
-    regex "^@@@[^\n]*@@@$" 0:Information
+    addhl shared/multi-file regions
 
-def -hidden \
-    -params 2 \
-    -override \
-    multi-file-hl-lang \
-%{
-    eval %sh{
-        printf '
-            addhl shared/multi-file/%s region \
-                "(?Si)^@@@ .*%s \d+,\d+ \S+ \S+ @@@$" \
-                "^(?=@@@ )" \
-                regions
-        ' "$1" "$2"
+    addhl shared/multi-file/default default-region \
+        regex "^@@@[^\n]*@@@$" 0:Information
 
-        printf '
-            addhl shared/multi-file/%s/header region \
-                "(?S)^@@@.*@@@$" $ \
-                fill Information
-        ' "$1"
+    def -hidden \
+        -params 2 \
+        -override \
+        multi-file-hl-lang \
+    %{
+        eval %sh{
+            printf '
+                addhl shared/multi-file/%s region \
+                    "(?Si)^@@@ .*%s \d+,\d+ \S+ \S+ @@@$" \
+                    "^(?=@@@ )" \
+                    regions
+            ' "$1" "$2"
 
-        printf '
-            addhl shared/multi-file/%s/body default-region \
-                ref %s
-        ' "$1" "$1"
+            printf '
+                addhl shared/multi-file/%s/header region \
+                    "(?S)^@@@.*@@@$" $ \
+                    fill Information
+            ' "$1"
+
+            printf '
+                addhl shared/multi-file/%s/body default-region \
+                    ref %s
+            ' "$1" "$1"
+        }
     }
-}
 
-multi-file-hl-lang objc \.(c|cc|cl|cpp|h|hh|hpp|m|mm)
-multi-file-hl-lang cabal \.cabal
-multi-file-hl-lang clojure \.(clj|cljc|cljs|cljx|edn)
-multi-file-hl-lang coffee \.coffee
-multi-file-hl-lang css .*\.css
-multi-file-hl-lang d .*\.d
-multi-file-hl-lang dockerfile dockerfile
-multi-file-hl-lang fish \.fish
-multi-file-hl-lang go \.go
-multi-file-hl-lang haskell \.hs
-multi-file-hl-lang html \.html?
-multi-file-hl-lang ini \.ini
-multi-file-hl-lang java \.java
-multi-file-hl-lang typescript \.m?[jt]sx?
-multi-file-hl-lang json \.json
-multi-file-hl-lang julia \.jl
-multi-file-hl-lang kakrc (\.kak|kakrc)
-multi-file-hl-lang latex \.(tex|cls|sty|dtx)
-multi-file-hl-lang lua \.lua
-multi-file-hl-lang makefile (makefile|\.mk|\.make)
-multi-file-hl-lang markdown \.(markdown|md|mkd)
-multi-file-hl-lang perl \.(t|p[lm])
-multi-file-hl-lang python \.py
-multi-file-hl-lang ruby \.rb
-multi-file-hl-lang rust \.rs
-multi-file-hl-lang sass \.sass
-multi-file-hl-lang scala \.scala
-multi-file-hl-lang scss \.scss
-multi-file-hl-lang sh \.(z|ba|c|k|mk)?sh(rc|_profile)?
-multi-file-hl-lang swift \.swift
-multi-file-hl-lang toml \.toml
-multi-file-hl-lang yaml \.ya?ml
-multi-file-hl-lang sql \.sql
+    multi-file-hl-lang objc \.(c|cc|cl|cpp|h|hh|hpp|m|mm)
+    multi-file-hl-lang cabal \.cabal
+    multi-file-hl-lang clojure \.(clj|cljc|cljs|cljx|edn)
+    multi-file-hl-lang coffee \.coffee
+    multi-file-hl-lang css .*\.css
+    multi-file-hl-lang d .*\.d
+    multi-file-hl-lang dockerfile dockerfile
+    multi-file-hl-lang fish \.fish
+    multi-file-hl-lang go \.go
+    multi-file-hl-lang haskell \.hs
+    multi-file-hl-lang html \.html?
+    multi-file-hl-lang ini \.ini
+    multi-file-hl-lang java \.java
+    multi-file-hl-lang typescript \.m?[jt]sx?
+    multi-file-hl-lang json \.json
+    multi-file-hl-lang julia \.jl
+    multi-file-hl-lang kakrc (\.kak|kakrc)
+    multi-file-hl-lang latex \.(tex|cls|sty|dtx)
+    multi-file-hl-lang lua \.lua
+    multi-file-hl-lang makefile (makefile|\.mk|\.make)
+    multi-file-hl-lang markdown \.(markdown|md|mkd)
+    multi-file-hl-lang perl \.(t|p[lm])
+    multi-file-hl-lang python \.py
+    multi-file-hl-lang ruby \.rb
+    multi-file-hl-lang rust \.rs
+    multi-file-hl-lang sass \.sass
+    multi-file-hl-lang scala \.scala
+    multi-file-hl-lang scss \.scss
+    multi-file-hl-lang sh \.(z|ba|c|k|mk)?sh(rc|_profile)?
+    multi-file-hl-lang swift \.swift
+    multi-file-hl-lang toml \.toml
+    multi-file-hl-lang yaml \.ya?ml
+    multi-file-hl-lang sql \.sql
 
-hook -group multi-file-highlight global WinSetOption filetype=multi-file %{
-    addhl window/multi-file ref multi-file
-    hook -once -always window WinSetOption filetype=.* %{
-        rmhl window/multi-file
+    hook -group multi-file-highlight global WinSetOption filetype=multi-file %{
+        addhl window/multi-file ref multi-file
+        hook -once -always window WinSetOption filetype=.* %{
+            rmhl window/multi-file
+        }
     }
-}
+
+§ # module multi-file-colors
