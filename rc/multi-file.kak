@@ -22,15 +22,7 @@ def -params .. \
                 >"$work_dir/output"
         ) >/dev/null 2>&1 </dev/null &
 
-        # Feed input
-        printf %s "
-            eval -draft %{
-                exec <%>
-                echo -quoting raw -to-file '$work_dir/input' '' %val{selection}
-            }
-        "
-
-        # Read output to client and cleaup when done
+        # Read output to client, write input
         printf %s "
             eval -try-client '$kak_opt_toolsclient' %{
                 edit! -fifo '$work_dir/output' *multi-file*
@@ -40,6 +32,9 @@ def -params .. \
                     exec -draft gjd
                     multi-file-close-empty '$kak_client'
                 }
+            }
+            eval -buffer '$kak_bufname' %{
+                write '$work_dir/input'
             }
         "
     }
@@ -82,21 +77,16 @@ def -override \
             fi
         ) >/dev/null 2>&1 </dev/null &
 
-        # Feed input
-        printf %s "
-            eval -buffer *multi-file* -draft %{
-                exec <%>
-                echo -quoting raw -to-file '$work_dir/input' '' %val{selection}
-            }
-        "
-
-        # Read output to client and cleaup when done
+        # Read output to client, write input
         printf %s "
             eval -try-client '$kak_opt_toolsclient' %{
                 edit! -fifo '$work_dir/output' *multi-file-output*
                 hook -always -once buffer BufCloseFifo .* %{
                     nop %sh{ rm -r '$work_dir' }
                 }
+            }
+            eval -buffer *multi-file* %{
+                write '$work_dir/input'
             }
         "
     }
@@ -136,15 +126,7 @@ def -override \
             fi
         ) >/dev/null 2>&1 </dev/null &
 
-        # Feed input
-        printf %s "
-            eval -buffer *multi-file* -draft %{
-                exec <%>
-                echo -quoting raw -to-file '$work_dir/input' '' %val{selection}
-            }
-        "
-
-        # Read output to client and cleaup when done
+        # Read output to client, write input
         printf %s "
             eval -try-client '$kak_opt_toolsclient' %{
                 edit! -fifo '$work_dir/output' *multi-file-review*
@@ -152,6 +134,9 @@ def -override \
                 hook -always -once buffer BufCloseFifo .* %{
                     nop %sh{ rm -r '$work_dir' }
                 }
+            }
+            eval -buffer *multi-file* %{
+                write '$work_dir/input'
             }
         "
     }
