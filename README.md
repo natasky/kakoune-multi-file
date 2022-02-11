@@ -1,8 +1,20 @@
-# kak-multi-file
+# kakoune-multi-file
 
 Kakoune plugin to make changes across multiple files in a single buffer.
 
 ![demo](./demo.gif)
+
+## Setup
+
+Requirements:
+
+- Python 3.6 or newer.
+
+Use `plug.kak` to install:
+
+```
+plug "natasky/kakoune-multi-file"
+```
 
 ## Workflow
 
@@ -16,8 +28,8 @@ You can edit `*grep*` buffer to add or remove lines of interest.
 [kakoune-find](https://github.com/occivink/kakoune-find)'s
 `find-apply-changes -force` command.
 
-**Tip**: if your compiler or linter emits lines like `<path>:<line>:`, its
-output can also be used to collect lines to change.
+**Tip**: if your compiler, linter or language server emits lines like
+`<path>:<line>:`, its output can also be used to collect lines to change.
 
 ### Make changes in single buffer
 
@@ -34,7 +46,8 @@ optional arguments:
 ```
 
 For example, `multi-file-from-grep -A10` will collect 3 lines before every
-result and 10 lines after.
+result and 10 lines after. This command always collects lines from the current
+buffer - usually you want to be in `*grep*` buffer for this.
 
 This will open a `*multi-file*` buffer with contents like:
 
@@ -94,26 +107,14 @@ to it.
 As with any action that modifies multiple files directly on disk, be sure to
 check in any existing changes to source control before starting.
 
-## Setup
-
-Requirements:
-
-- Python 3.6 or newer.
-
-Use `plug.kak` to install:
-
-```
-plug "natasky/kak-multi-file"
-```
-
 ## Comparison with kakoune-find
 
 `kakoune-find` is great for making changes directly in lines found by `grep`,
 e.g. for renaming something. Prefer using it in those cases, as it involves
 fewer steps.
 
-This plugin lets you edit multiple lines around each result, add or remove
-lines, and make changes to lines around the result found by `grep`.
+This plugin lets you edit multiple lines around each result and add or remove
+lines.
 
 ## Contributing
 
