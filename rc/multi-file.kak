@@ -24,7 +24,7 @@ def -params .. \
 
         # Read output to client, write input
         printf %s "
-            eval -try-client '$kak_opt_toolsclient' %{
+            eval %{
                 edit! -fifo '$work_dir/output' *multi-file*
                 set buffer filetype multi-file
                 hook -always -once buffer BufCloseFifo .* %{
