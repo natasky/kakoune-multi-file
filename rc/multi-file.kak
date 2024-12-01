@@ -29,7 +29,6 @@ def -params .. \
                 set buffer filetype multi-file
                 hook -always -once buffer BufCloseFifo .* %{
                     nop %sh{ rm -r '$work_dir' }
-                    exec -draft gjd
                     multi-file-close-empty '$kak_client'
                 }
             }
